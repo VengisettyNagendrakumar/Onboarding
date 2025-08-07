@@ -3,9 +3,4 @@ services:
     name: onboarding-websocket
     runtime: docker
     plan: free
-    region: singapore
     dockerfilePath: ./Dockerfile
-    envVars:
-      - key: PYTHONUNBUFFERED
-        value: "1"
-    autoDeploy: true
