@@ -1,21 +1,18 @@
 FROM python:3.12-slim
 
-# Install system dependencies (for PyAudio if needed)
+# Install system dependencies required by PyAudio
 RUN apt-get update && \
     apt-get install -y portaudio19-dev gcc && \
     rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy server-specific requirements
-COPY requirements-server.txt requirements.txt
+# Install dependencies
+COPY requirements-server.txt .
+RUN pip install --no-cache-dir -r requirements-server.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the code
+# Copy all code
 COPY . .
 
-# Run the WebSocket server
-CMD ["python", "serve1.py"]
+# Run your websocket server
+CMD ["python", "server1.py"]
