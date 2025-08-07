@@ -1,11 +1,11 @@
 services:
-  - type: web
+  - type: worker
     name: onboarding-websocket
-    env: docker
+    runtime: docker
+    region: oregon
     plan: free
-    dockerfilePath: ./Dockerfile
-    region: oregon  # or "frankfurt" if you're in Europe
-    autoDeploy: true
+    dockerContext: .
+    dockerfilePath: Dockerfile
     envVars:
-      - key: PORT
-        value: 15000  # ✅ Must match the port your app uses
+      - key: PYTHON_VERSION
+        value: 3.12

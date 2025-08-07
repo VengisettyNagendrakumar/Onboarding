@@ -55,8 +55,8 @@ async def handle_websocket(websocket, path):
         print(f"Client disconnected: {websocket.remote_address}")
 
 async def main():
-    server = await websockets.serve(handle_websocket, '0.0.0.0', 15000)
-    print("WebSocket server running at ws://localhost:15000")
+    server = await websockets.serve(handle_websocket, '0.0.0.0', 5000)
+    print("WebSocket server running at ws://localhost:5000")
     await server.wait_closed()
 
 if __name__ == '__main__':
