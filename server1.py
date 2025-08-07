@@ -3,6 +3,7 @@ import websockets
 import sys
 import json
 import re
+import os  # ✅ Needed for portable path
 
 # Regex pattern to match NER lines
 ner_pattern = re.compile(r'^(NAME|GENDER|DOB|PROFILE|ABOUT|INTERESTS): (.+)$')
@@ -11,14 +12,15 @@ async def handle_websocket(websocket, path):
     print(f"Client connected: {websocket.remote_address}")
 
     try:
-        # Run try3.py as a subprocess
+        # Dynamically determine the directory where this script is located
+        cwd_path = os.path.dirname(os.path.abspath(__file__))  # ✅ Use portable path
+
+        # Start the subprocess to run last.py
         process = await asyncio.create_subprocess_exec(
             sys.executable, 'last.py',
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            # cwd='E:/Machine Learning/ML Tasks(meetx)/Onboarding algorithm/Nova/nova sonic'
-            cwd='E:/Machine Learning/ML Tasks(meetx)/Onboarding algorithm/Nova/nova sonic'
-
+            cwd=cwd_path  # ✅ This makes it work regardless of OS
         )
     except Exception as e:
         error_msg = f"[Subprocess Error] {type(e).__name__}: {e}"
@@ -53,8 +55,8 @@ async def handle_websocket(websocket, path):
         print(f"Client disconnected: {websocket.remote_address}")
 
 async def main():
-    server = await websockets.serve(handle_websocket, '0.0.0.0', 5000)
-    print("WebSocket server running at ws://localhost:5000")
+    server = await websockets.serve(handle_websocket, '0.0.0.0', 15000)
+    print("WebSocket server running at ws://localhost:15000")
     await server.wait_closed()
 
 if __name__ == '__main__':

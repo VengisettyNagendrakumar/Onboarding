@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: onboarding-websocket
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    region: oregon  # or "frankfurt" if you're in Europe
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 15000  # ✅ Must match the port your app uses
