@@ -1,0 +1,161 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeetMux Profile Form</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6.26.0/babel.min.js"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function ProfileForm() {
+      const [formData, setFormData] = React.useState({
+        name: '',
+        gender: '',
+        dob: '',
+        profile: '',
+        about: '',
+        interests: ''
+      });
+
+      const [loading, setLoading] = React.useState(true);
+
+      React.useEffect(() => {
+        const ws = new WebSocket('ws://localhost:5000');
+
+        ws.onopen = () => {
+          console.log('WebSocket connected');
+          setLoading(false);
+        };
+
+        ws.onmessage = (event) => {
+          console.log('Message received:', event.data);
+          try {
+            const data = JSON.parse(event.data);
+            const label = data.label.toLowerCase();
+            let value = data.value;
+
+            // For dropdowns: Normalize for matching option values
+            if (label === 'gender') {
+              value = value.toLowerCase();
+              if (value === 'female') value = 'female';
+              else if (value === 'male') value = 'male';
+              else value = 'other';
+            }
+
+            if (label === 'profile') {
+              value = value.toLowerCase();
+              if (value !== 'private') value = 'public';
+            }
+
+            if (label === 'dob') {
+              // Expecting format: "DD-MM-YYYY"
+              const parts = value.split('-');
+              if (parts.length === 3) {
+                value = `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to YYYY-MM-DD for input type="date"
+              }
+            }
+
+            setFormData((prev) => ({
+              ...prev,
+              [label]: value
+            }));
+          } catch (e) {
+            console.error('JSON parse error:', e);
+          }
+        };
+
+        ws.onclose = () => console.log('WebSocket disconnected');
+        ws.onerror = (error) => console.error('WebSocket error:', error);
+
+        return () => ws.close();
+      }, []);
+
+      if (loading) {
+        return <div className="text-center text-gray-500">Loading...</div>;
+      }
+
+      return (
+        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+          <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">MeetMux Profile Setup</h1>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                value={formData.name}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Gender</label>
+              <select
+                value={formData.gender}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+              <input
+                type="date"
+                value={formData.dob}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Profile Type</label>
+              <select
+                value={formData.profile}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+              >
+                <option value="">Select Type</option>
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">About</label>
+              <textarea
+                value={formData.about}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                rows="3"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Interests</label>
+              <input
+                type="text"
+                value={formData.interests}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+              />
+            </div>
+          </div>
+          <p className="mt-4 text-sm text-gray-500 text-center">
+            Speak to Mux to fill your profile in real-time!
+          </p>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<ProfileForm />);
+  </script>
+</body>
+</html> -->
