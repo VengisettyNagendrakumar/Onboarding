@@ -1,69 +1,55 @@
-import asyncio
-import json
-import os
-import re
-import sys
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
+import json
+import uvicorn
+import os
+from pathlib import Path
 
-# FastAPI app
 app = FastAPI()
 
-# Regex pattern to match NER lines
-ner_pattern = re.compile(r'^(NAME|GENDER|DOB|PROFILE|ABOUT|INTERESTS): (.+)$')
+# Serve frontend HTML (if exists)
+@app.get("/")
+async def get():
+    index_path = Path("index.html")
+    if index_path.exists():
+        return HTMLResponse(index_path.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>FastAPI WebSocket Server Running</h1>")
 
-
+# WebSocket endpoint
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print(f"Client connected: {websocket.client}")
-
     try:
-        # Path to where `last.py` is located
-        cwd_path = os.path.dirname(os.path.abspath(__file__))
-
-        # Start the subprocess
-        process = await asyncio.create_subprocess_exec(
-            sys.executable, "last.py",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=cwd_path
-        )
-    except Exception as e:
-        error_msg = f"[Subprocess Error] {type(e).__name__}: {e}"
-        print(error_msg)
-        await websocket.send_json({'error': error_msg})
-        await websocket.close()
-        return
-
-    async def read_stream(stream, stream_name):
         while True:
-            line = await stream.readline()
-            if not line:
-                break
-            decoded = line.decode("utf-8").strip()
-            print(f"{stream_name}: {decoded}")
+            data = await websocket.receive_text()
+            print(f"📥 Received from client: {data}")
 
-            match = ner_pattern.match(decoded)
-            if match:
-                label, value = match.groups()
-                payload = {"label": label, "value": value}
-                print(f"Sending to client: {payload}")
-                await websocket.send_json(payload)
-            elif stream_name == "STDERR":
-                await websocket.send_json({'error': decoded})
+            try:
+                parsed = json.loads(data)  # Try to parse incoming JSON
+            except json.JSONDecodeError:
+                await websocket.send_text(json.dumps({
+                    "error": "Invalid JSON format"
+                }))
+                continue
 
-    try:
-        await asyncio.gather(
-            read_stream(process.stdout, "STDOUT"),
-            read_stream(process.stderr, "STDERR")
-        )
+            # Example: respond with structured JSON
+            response = {
+                "label": "name",
+                "value": "Mux User",
+                "received": parsed
+            }
+            await websocket.send_text(json.dumps(response))
+
     except WebSocketDisconnect:
-        print(f"Client disconnected: {websocket.client}")
-    finally:
-        await process.wait()
-        print(f"Subprocess finished for client: {websocket.client}")
+        print("⚡ Client disconnected")
+    except Exception as e:
+        print(f"❌ WebSocket error: {e}")
+        await websocket.close()
 
-
-@app.get("/")
-async def root():
-    return {"status": "WebSocket server is running"}
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000)),
+        reload=False
+    )

@@ -1,4 +1,3 @@
-<!-- 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +27,12 @@
       const [loading, setLoading] = React.useState(true);
 
       React.useEffect(() => {
-        const ws = new WebSocket('ws://localhost:5000');
+        // Auto-detect environment and pick the right WebSocket URL
+        const baseUrl = window.location.hostname === "localhost"
+          ? "ws://localhost:5000/ws"
+          : "wss://onboarding-h4q2.onrender.com/ws";
+
+        const ws = new WebSocket(baseUrl);
 
         ws.onopen = () => {
           console.log('WebSocket connected');
@@ -42,7 +46,6 @@
             const label = data.label.toLowerCase();
             let value = data.value;
 
-            // For dropdowns: Normalize for matching option values
             if (label === 'gender') {
               value = value.toLowerCase();
               if (value === 'female') value = 'female';
@@ -56,10 +59,9 @@
             }
 
             if (label === 'dob') {
-              // Expecting format: "DD-MM-YYYY"
               const parts = value.split('-');
               if (parts.length === 3) {
-                value = `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to YYYY-MM-DD for input type="date"
+                value = `${parts[2]}-${parts[1]}-${parts[0]}`;
               }
             }
 
@@ -92,6 +94,7 @@
                 type="text"
                 value={formData.name}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                readOnly
               />
             </div>
 
@@ -100,6 +103,7 @@
               <select
                 value={formData.gender}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                disabled
               >
                 <option value="">Select Gender</option>
                 <option value="male">Male</option>
@@ -114,6 +118,7 @@
                 type="date"
                 value={formData.dob}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                readOnly
               />
             </div>
 
@@ -122,6 +127,7 @@
               <select
                 value={formData.profile}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                disabled
               >
                 <option value="">Select Type</option>
                 <option value="public">Public</option>
@@ -135,6 +141,7 @@
                 value={formData.about}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
                 rows="3"
+                readOnly
               />
             </div>
 
@@ -144,6 +151,7 @@
                 type="text"
                 value={formData.interests}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-100"
+                readOnly
               />
             </div>
           </div>
@@ -158,4 +166,4 @@
     root.render(<ProfileForm />);
   </script>
 </body>
-</html> -->
+</html>
